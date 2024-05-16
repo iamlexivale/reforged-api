@@ -1,0 +1,697 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model AUTH {
+  NICKNAME          String  @db.VarChar(255)
+  LOWERCASENICKNAME String  @id @db.VarChar(255)
+  HASH              String  @db.VarChar(255)
+  IP                String? @db.VarChar(255)
+  TOTPTOKEN         String? @db.VarChar(255)
+  REGDATE           BigInt?
+  UUID              String? @db.VarChar(255)
+  PREMIUMUUID       String? @db.VarChar(255)
+  LOGINIP           String? @db.VarChar(255)
+  LOGINDATE         BigInt?
+  ISSUEDTIME        BigInt?
+
+  @@index([IP])
+  @@index([PREMIUMUUID])
+}
+
+model AuctionLists {
+  id          String  @id @db.VarChar(36)
+  ownAuctions String? @db.MediumText
+  ownBids     String? @db.MediumText
+}
+
+model Auctions {
+  id                String   @id @db.VarChar(36)
+  coins             Float?
+  ending            BigInt?
+  sellerDisplayName String?  @db.VarChar(50)
+  sellerName        String?  @db.VarChar(16)
+  sellerUUID        String?  @db.VarChar(36)
+  item              String?  @db.MediumText
+  displayName       String?  @db.VarChar(40)
+  bids              String?  @db.MediumText
+  sellerClaimed     Boolean?
+  buyerClaimed      Boolean?
+  buyerName         String?  @db.VarChar(16)
+}
+
+model ExternalGeneratedData {
+  id    String @id @db.VarChar(36)
+  coins Float?
+}
+
+model Interest {
+  id     String  @id @db.VarChar(36)
+  server String  @db.VarChar(32)
+  date   BigInt?
+}
+
+model PersonalBank {
+  id             String  @id @db.VarChar(36)
+  coins          Float?
+  upgrade        Int?
+  transactionlog String? @db.MediumText
+}
+
+model PlayerPurse {
+  id         String  @id @db.VarChar(36)
+  username   String? @db.VarChar(16)
+  coins      Float?
+  sharedBank String? @db.VarChar(36)
+}
+
+model PreviewData {
+  id   String  @id @db.VarChar(36)
+  item String? @db.MediumText
+}
+
+model RoyaleEconomygems {
+  id    String @id @db.VarChar(36)
+  coins Float?
+}
+
+model RoyaleEconomytokens {
+  id    String @id @db.VarChar(36)
+  coins Float?
+}
+
+model SharedBank {
+  id             String  @id @db.VarChar(36)
+  owner          String? @db.VarChar(36)
+  members        String? @db.MediumText
+  coins          Float?
+  upgrade        Int?
+  transactionlog String? @db.MediumText
+}
+
+model VentureChat {
+  ID       BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  ChatTime String? @db.Text
+  UUID     String? @db.Text
+  Name     String? @db.Text
+  Server   String? @db.Text
+  Channel  String? @db.Text
+  Text     String? @db.Text
+  Type     String? @db.Text
+}
+
+model backpack_players {
+  player_id Int        @id @default(autoincrement()) @db.UnsignedInt
+  name      String     @db.VarChar(16)
+  uuid      String?    @unique(map: "uuid_UNIQUE") @db.Char(36)
+  backpacks backpacks?
+}
+
+model backpacks {
+  owner            Int              @id @db.UnsignedInt
+  itemstacks       Bytes?           @db.MediumBlob
+  version          Int?             @default(0)
+  lastupdate       DateTime         @default(now()) @db.Timestamp(0)
+  backpack_players backpack_players @relation(fields: [owner], references: [player_id], onDelete: Cascade, map: "fk_backpacks_backpack_players_owner")
+}
+
+model cp_art_map {
+  rowid Int     @id @default(autoincrement())
+  id    Int?
+  art   String? @db.VarChar(255)
+
+  @@index([id], map: "id")
+}
+
+model cp_block {
+  rowid       BigInt @id @default(autoincrement())
+  time        Int?
+  user        Int?
+  wid         Int?
+  x           Int?
+  y           Int?
+  z           Int?
+  type        Int?
+  data        Int?
+  meta        Bytes? @db.MediumBlob
+  blockdata   Bytes? @db.Blob
+  action      Int?   @db.TinyInt
+  rolled_back Int?   @db.TinyInt
+
+  @@index([type, time], map: "type")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_blockdata_map {
+  rowid Int     @id @default(autoincrement())
+  id    Int?
+  data  String? @db.VarChar(255)
+
+  @@index([id], map: "id")
+}
+
+model cp_chat {
+  rowid   Int     @id @default(autoincrement())
+  time    Int?
+  user    Int?
+  wid     Int?
+  x       Int?
+  y       Int?
+  z       Int?
+  message String? @db.VarChar(16000)
+
+  @@index([time], map: "time")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_command {
+  rowid   Int     @id @default(autoincrement())
+  time    Int?
+  user    Int?
+  wid     Int?
+  x       Int?
+  y       Int?
+  z       Int?
+  message String? @db.VarChar(16000)
+
+  @@index([time], map: "time")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_container {
+  rowid       Int    @id @default(autoincrement())
+  time        Int?
+  user        Int?
+  wid         Int?
+  x           Int?
+  y           Int?
+  z           Int?
+  type        Int?
+  data        Int?
+  amount      Int?
+  metadata    Bytes? @db.Blob
+  action      Int?   @db.TinyInt
+  rolled_back Int?   @db.TinyInt
+
+  @@index([type, time], map: "type")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_database_lock {
+  rowid  Int  @id @default(autoincrement())
+  status Int? @db.TinyInt
+  time   Int?
+}
+
+model cp_entity {
+  rowid Int    @id @default(autoincrement())
+  time  Int?
+  data  Bytes? @db.Blob
+}
+
+model cp_entity_map {
+  rowid  Int     @id @default(autoincrement())
+  id     Int?
+  entity String? @db.VarChar(255)
+
+  @@index([id], map: "id")
+}
+
+model cp_item {
+  rowid       Int    @id @default(autoincrement())
+  time        Int?
+  user        Int?
+  wid         Int?
+  x           Int?
+  y           Int?
+  z           Int?
+  type        Int?
+  data        Bytes? @db.Blob
+  amount      Int?
+  action      Int?   @db.TinyInt
+  rolled_back Int?   @db.TinyInt
+
+  @@index([type, time], map: "type")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_material_map {
+  rowid    Int     @id @default(autoincrement())
+  id       Int?
+  material String? @db.VarChar(255)
+
+  @@index([id], map: "id")
+}
+
+model cp_session {
+  rowid  Int  @id @default(autoincrement())
+  time   Int?
+  user   Int?
+  wid    Int?
+  x      Int?
+  y      Int?
+  z      Int?
+  action Int? @db.TinyInt
+
+  @@index([action, time], map: "action")
+  @@index([time], map: "time")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_sign {
+  rowid           Int     @id @default(autoincrement())
+  time            Int?
+  user            Int?
+  wid             Int?
+  x               Int?
+  y               Int?
+  z               Int?
+  action          Int?    @db.TinyInt
+  color           Int?
+  color_secondary Int?
+  data            Int?    @db.TinyInt
+  waxed           Int?    @db.TinyInt
+  face            Int?    @db.TinyInt
+  line_1          String? @db.VarChar(100)
+  line_2          String? @db.VarChar(100)
+  line_3          String? @db.VarChar(100)
+  line_4          String? @db.VarChar(100)
+  line_5          String? @db.VarChar(100)
+  line_6          String? @db.VarChar(100)
+  line_7          String? @db.VarChar(100)
+  line_8          String? @db.VarChar(100)
+
+  @@index([time], map: "time")
+  @@index([user, time], map: "user")
+  @@index([wid, x, z, time], map: "wid")
+}
+
+model cp_skull {
+  rowid Int     @id @default(autoincrement())
+  time  Int?
+  owner String? @db.VarChar(64)
+}
+
+model cp_user {
+  rowid Int     @id @default(autoincrement())
+  time  Int?
+  user  String? @db.VarChar(100)
+  uuid  String? @db.VarChar(64)
+
+  @@index([user], map: "user")
+  @@index([uuid], map: "uuid")
+}
+
+model cp_username_log {
+  rowid Int     @id @default(autoincrement())
+  time  Int?
+  uuid  String? @db.VarChar(64)
+  user  String? @db.VarChar(100)
+
+  @@index([uuid, user], map: "uuid")
+}
+
+model cp_version {
+  rowid   Int     @id @default(autoincrement())
+  time    Int?
+  version String? @db.VarChar(16)
+}
+
+model cp_world {
+  rowid Int     @id @default(autoincrement())
+  id    Int?
+  world String? @db.VarChar(255)
+
+  @@index([id], map: "id")
+}
+
+model discordsrv_accounts {
+  link    Int    @id @default(autoincrement())
+  discord String @unique(map: "accounts_discord_uindex") @db.VarChar(32)
+  uuid    String @unique(map: "accounts_uuid_uindex") @db.VarChar(36)
+}
+
+model discordsrv_codes {
+  code       String @id @db.Char(4)
+  uuid       String @unique(map: "codes_uuid_uindex") @db.VarChar(36)
+  expiration BigInt
+}
+
+model gemseconomy_accounts {
+  nickname     String? @db.VarChar(255)
+  uuid         String  @id @db.VarChar(255)
+  payable      Int?
+  balance_data String? @db.LongText
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model gemseconomy_balances {
+  account_id  String   @id @db.VarChar(255)
+  currency_id String?  @db.VarChar(255)
+  balance     Decimal? @db.Decimal(10, 0)
+
+  @@ignore
+}
+
+model gemseconomy_currencies {
+  uuid               String   @id @db.VarChar(255)
+  name_singular      String?  @db.VarChar(255)
+  name_plural        String?  @db.VarChar(255)
+  default_balance    Decimal? @db.Decimal(10, 0)
+  symbol             String?  @db.VarChar(10)
+  decimals_supported Int?
+  is_default         Int?
+  payable            Int?
+  color              String?  @db.VarChar(255)
+  exchange_rate      Decimal? @db.Decimal(10, 0)
+}
+
+model litebans_allow {
+  id   BigInt @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  uuid Bytes  @db.Binary(16)
+  type Int    @db.UnsignedTinyInt
+}
+
+model litebans_bans {
+  id                BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  uuid              String?  @db.VarChar(36)
+  ip                String?  @db.VarChar(45)
+  reason            String?  @db.VarChar(2048)
+  banned_by_uuid    String   @db.VarChar(36)
+  banned_by_name    String?  @db.VarChar(128)
+  removed_by_uuid   String?  @db.VarChar(36)
+  removed_by_name   String?  @db.VarChar(128)
+  removed_by_reason String?  @db.VarChar(2048)
+  removed_by_date   DateTime @default(now()) @db.Timestamp(0)
+  time              BigInt
+  until             BigInt
+  template          Int      @default(255) @db.UnsignedTinyInt
+  server_scope      String?  @db.VarChar(32)
+  server_origin     String?  @db.VarChar(32)
+  silent            Boolean  @db.Bit(1)
+  ipban             Boolean  @db.Bit(1)
+  ipban_wildcard    Boolean  @default(dbgenerated("(b'0')")) @db.Bit(1)
+  active            Boolean  @db.Bit(1)
+
+  @@index([active], map: "idx_litebans_bans_active")
+  @@index([banned_by_uuid], map: "idx_litebans_bans_banned_by_uuid")
+  @@index([ip], map: "idx_litebans_bans_ip")
+  @@index([ipban], map: "idx_litebans_bans_ipban")
+  @@index([ipban_wildcard], map: "idx_litebans_bans_ipban_wildcard")
+  @@index([template], map: "idx_litebans_bans_template")
+  @@index([time], map: "idx_litebans_bans_time")
+  @@index([until], map: "idx_litebans_bans_until")
+  @@index([uuid], map: "idx_litebans_bans_uuid")
+}
+
+model litebans_config {
+  id       BigInt @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  version  String @db.VarChar(128)
+  build    String @db.VarChar(128)
+  timezone String @default("+00:00") @db.VarChar(64)
+}
+
+model litebans_history {
+  id   BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  date DateTime @default(now()) @db.Timestamp(0)
+  name String?  @db.VarChar(16)
+  uuid String?  @db.VarChar(36)
+  ip   String?  @db.VarChar(45)
+
+  @@index([ip], map: "idx_litebans_history_ip")
+  @@index([name], map: "idx_litebans_history_name")
+  @@index([uuid], map: "idx_litebans_history_uuid")
+}
+
+model litebans_kicks {
+  id             BigInt  @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  uuid           String? @db.VarChar(36)
+  ip             String? @db.VarChar(45)
+  reason         String? @db.VarChar(2048)
+  banned_by_uuid String  @db.VarChar(36)
+  banned_by_name String? @db.VarChar(128)
+  time           BigInt
+  until          BigInt
+  template       Int     @default(255) @db.UnsignedTinyInt
+  server_scope   String? @db.VarChar(32)
+  server_origin  String? @db.VarChar(32)
+  silent         Boolean @db.Bit(1)
+  ipban          Boolean @db.Bit(1)
+  ipban_wildcard Boolean @default(dbgenerated("(b'0')")) @db.Bit(1)
+  active         Boolean @db.Bit(1)
+
+  @@index([active], map: "idx_litebans_kicks_active")
+  @@index([banned_by_uuid], map: "idx_litebans_kicks_banned_by_uuid")
+  @@index([ip], map: "idx_litebans_kicks_ip")
+  @@index([ipban], map: "idx_litebans_kicks_ipban")
+  @@index([ipban_wildcard], map: "idx_litebans_kicks_ipban_wildcard")
+  @@index([template], map: "idx_litebans_kicks_template")
+  @@index([time], map: "idx_litebans_kicks_time")
+  @@index([until], map: "idx_litebans_kicks_until")
+  @@index([uuid], map: "idx_litebans_kicks_uuid")
+}
+
+model litebans_mutes {
+  id                BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  uuid              String?  @db.VarChar(36)
+  ip                String?  @db.VarChar(45)
+  reason            String?  @db.VarChar(2048)
+  banned_by_uuid    String   @db.VarChar(36)
+  banned_by_name    String?  @db.VarChar(128)
+  removed_by_uuid   String?  @db.VarChar(36)
+  removed_by_name   String?  @db.VarChar(128)
+  removed_by_reason String?  @db.VarChar(2048)
+  removed_by_date   DateTime @default(now()) @db.Timestamp(0)
+  time              BigInt
+  until             BigInt
+  template          Int      @default(255) @db.UnsignedTinyInt
+  server_scope      String?  @db.VarChar(32)
+  server_origin     String?  @db.VarChar(32)
+  silent            Boolean  @db.Bit(1)
+  ipban             Boolean  @db.Bit(1)
+  ipban_wildcard    Boolean  @default(dbgenerated("(b'0')")) @db.Bit(1)
+  active            Boolean  @db.Bit(1)
+
+  @@index([active], map: "idx_litebans_mutes_active")
+  @@index([banned_by_uuid], map: "idx_litebans_mutes_banned_by_uuid")
+  @@index([ip], map: "idx_litebans_mutes_ip")
+  @@index([ipban], map: "idx_litebans_mutes_ipban")
+  @@index([ipban_wildcard], map: "idx_litebans_mutes_ipban_wildcard")
+  @@index([template], map: "idx_litebans_mutes_template")
+  @@index([time], map: "idx_litebans_mutes_time")
+  @@index([until], map: "idx_litebans_mutes_until")
+  @@index([uuid], map: "idx_litebans_mutes_uuid")
+}
+
+model litebans_servers {
+  id   BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  name String   @db.VarChar(32)
+  uuid String   @db.VarChar(32)
+  date DateTime @default(now()) @db.Timestamp(0)
+}
+
+model litebans_sync {
+  id   BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  info Int      @db.UnsignedInt
+  msg  String   @db.VarChar(4096)
+  time DateTime @default(now()) @db.Timestamp(0)
+}
+
+model litebans_warnings {
+  id                BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  uuid              String?  @db.VarChar(36)
+  ip                String?  @db.VarChar(45)
+  reason            String?  @db.VarChar(2048)
+  banned_by_uuid    String   @db.VarChar(36)
+  banned_by_name    String?  @db.VarChar(128)
+  removed_by_uuid   String?  @db.VarChar(36)
+  removed_by_name   String?  @db.VarChar(128)
+  removed_by_reason String?  @db.VarChar(2048)
+  removed_by_date   DateTime @default(now()) @db.Timestamp(0)
+  time              BigInt
+  until             BigInt
+  template          Int      @default(255) @db.UnsignedTinyInt
+  server_scope      String?  @db.VarChar(32)
+  server_origin     String?  @db.VarChar(32)
+  silent            Boolean  @db.Bit(1)
+  ipban             Boolean  @db.Bit(1)
+  ipban_wildcard    Boolean  @default(dbgenerated("(b'0')")) @db.Bit(1)
+  active            Boolean  @db.Bit(1)
+  warned            Boolean  @db.Bit(1)
+
+  @@index([active], map: "idx_litebans_warnings_active")
+  @@index([banned_by_uuid], map: "idx_litebans_warnings_banned_by_uuid")
+  @@index([ip], map: "idx_litebans_warnings_ip")
+  @@index([ipban], map: "idx_litebans_warnings_ipban")
+  @@index([ipban_wildcard], map: "idx_litebans_warnings_ipban_wildcard")
+  @@index([template], map: "idx_litebans_warnings_template")
+  @@index([time], map: "idx_litebans_warnings_time")
+  @@index([until], map: "idx_litebans_warnings_until")
+  @@index([uuid], map: "idx_litebans_warnings_uuid")
+}
+
+model luckperms_actions {
+  id         Int    @id @default(autoincrement())
+  time       BigInt
+  actor_uuid String @db.VarChar(36)
+  actor_name String @db.VarChar(100)
+  type       String @db.Char(1)
+  acted_uuid String @db.VarChar(36)
+  acted_name String @db.VarChar(36)
+  action     String @db.VarChar(300)
+}
+
+model luckperms_group_permissions {
+  id         Int     @id @default(autoincrement())
+  name       String  @db.VarChar(36)
+  permission String  @db.VarChar(200)
+  value      Boolean
+  server     String  @db.VarChar(36)
+  world      String  @db.VarChar(64)
+  expiry     BigInt
+  contexts   String  @db.VarChar(200)
+
+  @@index([name], map: "luckperms_group_permissions_name")
+}
+
+model luckperms_groups {
+  name String @id @db.VarChar(36)
+}
+
+model luckperms_players {
+  uuid          String @id @db.VarChar(36)
+  username      String @db.VarChar(16)
+  primary_group String @db.VarChar(36)
+
+  @@index([username], map: "luckperms_players_username")
+}
+
+model luckperms_tracks {
+  name   String @id @db.VarChar(36)
+  groups String @db.Text
+}
+
+model luckperms_user_permissions {
+  id         Int     @id @default(autoincrement())
+  uuid       String  @db.VarChar(36)
+  permission String  @db.VarChar(200)
+  value      Boolean
+  server     String  @db.VarChar(36)
+  world      String  @db.VarChar(64)
+  expiry     BigInt
+  contexts   String  @db.VarChar(200)
+
+  @@index([uuid], map: "luckperms_user_permissions_uuid")
+}
+
+model mmocore_playerdata {
+  uuid                           String  @id @db.VarChar(36)
+  class_points                   Int?    @default(0)
+  skill_points                   Int?    @default(0)
+  attribute_points               Int?    @default(0)
+  attribute_realloc_points       Int?    @default(0)
+  skill_reallocation_points      Int?    @default(0)
+  skill_tree_reallocation_points Int?    @default(0)
+  skill_tree_points              String? @db.LongText
+  skill_tree_levels              String? @db.LongText
+  level                          Int?    @default(1)
+  experience                     Int?    @default(0)
+  class                          String? @db.VarChar(20)
+  guild                          String? @db.VarChar(20)
+  last_login                     String? @db.MediumText
+  attributes                     String? @db.LongText
+  professions                    String? @db.LongText
+  times_claimed                  String? @db.LongText
+  quests                         String? @db.LongText
+  waypoints                      String? @db.LongText
+  friends                        String? @db.LongText
+  skills                         String? @db.LongText
+  bound_skills                   String? @db.LongText
+  health                         Float?  @db.Float
+  mana                           Float?  @db.Float
+  stamina                        Float?  @db.Float
+  stellium                       Float?  @db.Float
+  unlocked_items                 String? @db.LongText
+  class_info                     String? @db.LongText
+  is_saved                       Int?    @db.TinyInt
+}
+
+model mmoinventory_inventories {
+  uuid      String  @id @db.VarChar(36)
+  inventory String? @db.LongText
+  is_saved  Int?    @db.TinyInt
+}
+
+model mmoprofiles_playerdata {
+  uuid     String  @id @db.VarChar(36)
+  data     String? @db.LongText
+  is_saved Int?    @db.TinyInt
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model personal_backpacks {
+  uuid        String    @id @db.VarChar(128)
+  player_name String?   @db.VarChar(128)
+  content     String?   @db.LongText
+  update_date DateTime? @db.DateTime(0)
+
+  @@ignore
+}
+
+model premiumvanish_playerdata {
+  UUID        String   @id @db.VarChar(36)
+  Name        String?  @db.VarChar(16)
+  Vanished    Boolean?
+  ItemPickUps Boolean?
+}
+
+model sr_cache {
+  name      String  @id @db.VarChar(16)
+  uuid      String? @db.VarChar(36)
+  timestamp BigInt
+}
+
+model sr_custom_skins {
+  name      String @id @db.VarChar(36)
+  value     String @db.Text
+  signature String @db.Text
+}
+
+model sr_player_skins {
+  uuid            String  @id @db.VarChar(36)
+  last_known_name String? @db.VarChar(16)
+  value           String  @db.Text
+  signature       String  @db.Text
+  timestamp       BigInt
+}
+
+model sr_players {
+  uuid            String  @id @db.VarChar(36)
+  skin_identifier String? @db.VarChar(2083)
+  skin_variant    String? @db.VarChar(20)
+  skin_type       String? @db.VarChar(20)
+}
+
+model sr_url_index {
+  url          String  @id @db.VarChar(266)
+  skin_variant String? @db.VarChar(20)
+}
+
+model sr_url_skins {
+  url          String  @id @db.VarChar(266)
+  mine_skin_id String? @db.VarChar(36)
+  value        String  @db.Text
+  signature    String  @db.Text
+  skin_variant String? @db.VarChar(20)
+}
