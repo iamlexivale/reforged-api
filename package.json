@@ -4,9 +4,10 @@
  "description": "Official Javascript implementation of the Reforged Public API",
  "main": "api/index.ts",
  "scripts": {
-  "build": "npx tsc",
+  "build": "npx prisma generate && npx tsc",
   "start": "npx ts-node api/index.ts",
-  "dev": "nodemon api/index.ts"
+  "dev": "nodemon api/index.ts",
+  "postinstall": "npx prisma generate"
  },
  "keywords": [],
  "author": "",
