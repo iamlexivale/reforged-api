@@ -2,7 +2,7 @@
  "name": "reforged-api",
  "version": "1.5",
  "description": "Official Javascript implementation of the Reforged Public API",
- "main": "api/index.ts",
+ "main": "src/index.ts",
  "scripts": {
   "build": "npx tsc",
   "start": "npx ts-node src/index.ts",
