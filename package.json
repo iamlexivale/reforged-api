@@ -2,22 +2,22 @@
  "name": "reforged-api",
  "version": "1.5",
  "description": "Official Javascript implementation of the Reforged Public API",
- "main": "src/index.ts",
+ "main": "api/index.ts",
  "scripts": {
   "build": "npx tsc",
-  "start": "npx ts-node src/index.ts",
-  "dev": "nodemon src/index.ts"
+  "start": "npx ts-node api/index.ts",
+  "dev": "nodemon api/index.ts"
  },
  "keywords": [],
  "author": "",
  "license": "MIT",
  "dependencies": {
+  "@prisma/client": "^5.14.0",
   "cors": "^2.8.5",
   "dotenv": "^16.4.5",
   "express": "^4.19.2"
  },
  "devDependencies": {
-  "@prisma/client": "^5.14.0",
   "@types/cors": "^2.8.17",
   "@types/express": "^4.17.21",
   "@types/node": "^20.12.12",

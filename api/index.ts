@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 const app = express();
 const port = 5000;
 
@@ -18,9 +18,9 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get('/v1/profile', async (req, res) => {
-  const data = await prisma.mmoprofiles_playerdata.findMany()
-  res.json(data)
-})
+  const data = await prisma.mmoprofiles_playerdata.findMany();
+  res.json(data);
+});
 
 app.listen(port, () => {
   console.log(`[server] server is running at http://localhost:${port}`);
