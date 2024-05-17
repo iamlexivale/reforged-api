@@ -16,10 +16,24 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", async (req: Request, res: Response) => {
   try {
     const response = {
-      response: {
-        message: 'Official Javascript implementation of the Reforged Public API',
-        docs: 'https://docs.reforged.world',
-      },
+      message: 'Official Javascript implementation of the Reforged Public API',
+      docs: 'https://docs.reforged.world',
+    }
+    
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      error: 'An error occurred while fetching data /',
+      details: error
+    });
+  }
+});
+
+app.get("/v1", async (req: Request, res: Response) => {
+  try {
+    const response = {
+      message: 'Official Javascript implementation of the Reforged Public API',
+      docs: 'https://docs.reforged.world',
       request: {
         timestamp: new Date().toISOString(),
         version: 1
