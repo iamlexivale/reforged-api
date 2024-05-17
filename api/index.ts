@@ -1,7 +1,8 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -13,55 +14,55 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", async (req: Request, res: Response) => {
-  try {
-    const response = {
-      message: 'Official Javascript implementation of the Reforged Public API',
-      docs: 'https://docs.reforged.world',
-    }
-    
-    res.status(200).json(response);
-  } catch (error) {
-    res.status(500).json({
-      error: 'An error occurred while fetching data /',
-      details: error
-    });
+interface CustomRequest extends Request {
+  skipRateLimit?: boolean;
+}
+
+const checkOrigin = (req: CustomRequest, res: Response, next: NextFunction) => {
+  const allowedOrigin = 'https://www.reforged.world';
+  const origin = req.get('Origin') || req.get('Referer');
+  
+  if (origin && origin.startsWith(allowedOrigin)) {
+    req.skipRateLimit = true;
   }
+
+  next();
+};
+
+const playerRateLimit = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: 750,
+  message: 'Too many requests from this IP, please try again later.',
+  skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
-app.get("/v1", async (req: Request, res: Response) => {
-  try {
-    const response = {
-      message: 'Official Javascript implementation of the Reforged Public API',
-      docs: 'https://docs.reforged.world',
-      request: {
-        timestamp: new Date().toISOString(),
-        version: 1
-      }
-    };
-
-    res.status(200).json(response);
-  } catch (error) {
-    res.status(500).json({
-      error: 'An error occurred while fetching data /v1/',
-      details: error
-    });
-  }
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'Official JavaScript implementation of the Reforged Public API',
+    docs: 'https://docs.reforged.world',
+  });
 });
 
-app.get('/v1/players', async (req: Request, res: Response) => {
+app.get("/v1", (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'Official JavaScript implementation of the Reforged Public API',
+    docs: 'https://docs.reforged.world',
+    request: {
+      timestamp: new Date().toISOString(),
+      version: 1,
+    },
+  });
+});
+
+app.get('/v1/players', checkOrigin, playerRateLimit, async (req: CustomRequest, res: Response) => {
   try {
     const data = await prisma.aUTH.findMany({
       select: {
         NICKNAME: true,
         UUID: true,
-        mmoprofiles_playerdata: {
-          select: { data: true }
-        }
+        mmoprofiles_playerdata: { select: { data: true } }
       },
-      orderBy: {
-        REGDATE: 'desc'
-      }
+      orderBy: { REGDATE: 'desc' }
     });
 
     const modifiedData = data.map(user => {
@@ -83,24 +84,22 @@ app.get('/v1/players', async (req: Request, res: Response) => {
       };
     });
 
-    const response = {
+    res.status(200).json({
       players: modifiedData,
       request: {
         timestamp: new Date().toISOString(),
         version: 1
       }
-    };
-
-    res.status(200).json(response);
+    });
   } catch (error) {
     res.status(500).json({
       error: 'An error occurred while fetching /v1/players',
-      details: error
+      details: error,
     });
   }
 });
 
-app.get('/v1/player/:username', async (req: Request, res: Response) => {
+app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: CustomRequest, res: Response) => {
   const { username } = req.params;
 
   try {
@@ -109,9 +108,7 @@ app.get('/v1/player/:username', async (req: Request, res: Response) => {
       select: {
         NICKNAME: true,
         UUID: true,
-        mmoprofiles_playerdata: {
-          select: { data: true }
-        }
+        mmoprofiles_playerdata: { select: { data: true } }
       }
     });
 
@@ -147,28 +144,26 @@ app.get('/v1/player/:username', async (req: Request, res: Response) => {
       };
     });
 
-    const response = {
-      player: modifiedData[0],
-      request: {
-        timestamp: new Date().toISOString(),
-        version: 1
-      }
-    };
-
     if (modifiedData.length > 0) {
-      res.status(200).json(response);
+      res.status(200).json({
+        player: modifiedData[0],
+        request: {
+          timestamp: new Date().toISOString(),
+          version: 1
+        }
+      });
     } else {
-      res.status(400).json({ error: `player ${username} not found` });
+      res.status(400).json({ error: `Player ${username} not found` });
     }
   } catch (error) {
     res.status(500).json({
       error: `An error occurred while fetching /v1/player/${username}`,
-      details: error
+      details: error,
     });
   }
 });
 
-app.get('/v1/player/:username/:profile', async (req: Request, res: Response) => {
+app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (req: CustomRequest, res: Response) => {
   const { username, profile } = req.params;
 
   try {
@@ -177,9 +172,7 @@ app.get('/v1/player/:username/:profile', async (req: Request, res: Response) => 
       select: {
         NICKNAME: true,
         UUID: true,
-        mmoprofiles_playerdata: {
-          select: { data: true }
-        }
+        mmoprofiles_playerdata: { select: { data: true } }
       }
     });
 
@@ -235,7 +228,7 @@ app.get('/v1/player/:username/:profile', async (req: Request, res: Response) => 
         };
         res.status(200).json(response);
       } else {
-        res.status(400).json({ error: `profile ${profile} not found for player ${username}` });
+        res.status(400).json({ error: `Profile ${profile} not found for player ${username}` });
       }
     } else {
       res.status(400).json({ error: `player ${username} not found` });
@@ -246,6 +239,12 @@ app.get('/v1/player/:username/:profile', async (req: Request, res: Response) => 
       details: error
     });
   }
+});
+
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    error: 'Route not found'
+  });
 });
 
 app.listen(port, () => {
