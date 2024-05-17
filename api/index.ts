@@ -58,6 +58,9 @@ app.get('/v1/players', async (req: Request, res: Response) => {
         mmoprofiles_playerdata: {
           select: { data: true }
         }
+      },
+      orderBy: {
+        REGDATE: 'desc'
       }
     });
 
