@@ -33,6 +33,7 @@ const playerRateLimit = rateLimit({
   windowMs: 30 * 60 * 1000,
   max: 750,
   message: 'Too many requests from this IP, please try again later.',
+  statusCode: 429,
   skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
