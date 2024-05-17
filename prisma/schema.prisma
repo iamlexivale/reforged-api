@@ -8,17 +8,18 @@ datasource db {
 }
 
 model AUTH {
-  NICKNAME          String  @db.VarChar(255)
-  LOWERCASENICKNAME String  @id @db.VarChar(255)
-  HASH              String  @db.VarChar(255)
-  IP                String? @db.VarChar(255)
-  TOTPTOKEN         String? @db.VarChar(255)
-  REGDATE           BigInt?
-  UUID              String? @db.VarChar(255)
-  PREMIUMUUID       String? @db.VarChar(255)
-  LOGINIP           String? @db.VarChar(255)
-  LOGINDATE         BigInt?
-  ISSUEDTIME        BigInt?
+  NICKNAME               String                  @db.VarChar(255)
+  LOWERCASENICKNAME      String                  @id @db.VarChar(255)
+  HASH                   String                  @db.VarChar(255)
+  IP                     String?                 @db.VarChar(255)
+  TOTPTOKEN              String?                 @db.VarChar(255)
+  REGDATE                BigInt?
+  UUID                   String?                 @unique(map: "uuid") @db.VarChar(255)
+  PREMIUMUUID            String?                 @db.VarChar(255)
+  LOGINIP                String?                 @db.VarChar(255)
+  LOGINDATE              BigInt?
+  ISSUEDTIME             BigInt?
+  mmoprofiles_playerdata mmoprofiles_playerdata?
 
   @@index([IP])
   @@index([PREMIUMUUID])
@@ -355,13 +356,10 @@ model gemseconomy_accounts {
   balance_data String? @db.LongText
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model gemseconomy_balances {
   account_id  String   @id @db.VarChar(255)
   currency_id String?  @db.VarChar(255)
   balance     Decimal? @db.Decimal(10, 0)
-
-  @@ignore
 }
 
 model gemseconomy_currencies {
@@ -634,19 +632,17 @@ model mmoinventory_inventories {
 }
 
 model mmoprofiles_playerdata {
-  uuid     String  @id @db.VarChar(36)
+  uuid     String  @id @db.VarChar(255)
   data     String? @db.LongText
   is_saved Int?    @db.TinyInt
+  AUTH     AUTH    @relation(fields: [uuid], references: [UUID], onUpdate: Restrict, map: "nicknames")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model personal_backpacks {
   uuid        String    @id @db.VarChar(128)
   player_name String?   @db.VarChar(128)
   content     String?   @db.LongText
   update_date DateTime? @db.DateTime(0)
-
-  @@ignore
 }
 
 model premiumvanish_playerdata {
