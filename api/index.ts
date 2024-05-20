@@ -37,6 +37,14 @@ const playerRateLimit = rateLimit({
   skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
+const guildRateLimit = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: 750,
+  message: 'Too many requests from this IP, please try again later.',
+  statusCode: 429,
+  skip: (req: CustomRequest) => req.skipRateLimit || false,
+});
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message: 'Official JavaScript implementation of the Reforged Public API',
@@ -238,6 +246,60 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
     res.status(500).json({
       error: `An error occurred while fetching /v1/player/${username}/${profile}`,
       details: error
+    });
+  }
+});
+
+app.get('/v1/guilds', checkOrigin, guildRateLimit, async (req: CustomRequest, res: Response) => {
+  try {
+    const data = await prisma.guilds_guild.findMany({
+      select: { data: true },
+    });
+
+    const beautifiedData = data.map((item: any) => {
+      return JSON.parse(item.data);
+    });
+
+    res.status(200).json({
+      guilds: beautifiedData,
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'An error occurred while fetching /v1/guilds',
+      details: error,
+    });
+  }
+});
+
+app.get('/v1/guild/:name', checkOrigin, guildRateLimit, async (req: CustomRequest, res: Response) => {
+  const { name } = req.params;
+
+  try {
+    const allGuilds = await prisma.guilds_guild.findMany({
+      select: { data: true },
+    });
+
+    const guild: any = allGuilds.map((item: any) => JSON.parse(item.data)).find((g: any) => g.name === name);
+
+    if (guild) {
+      res.status(200).json({
+        player: guild,
+        request: {
+          timestamp: new Date().toISOString(),
+          version: 1
+        }
+      });
+    } else {
+      res.status(400).json({ error: `Guild ${name} not found` });
+    }
+  } catch (error) {
+    res.status(500).json({
+      error: `An error occurred while fetching /v1/guild/${name}`,
+      details: error,
     });
   }
 });

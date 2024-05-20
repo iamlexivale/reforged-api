@@ -106,6 +106,80 @@ model VentureChat {
   Type     String? @db.Text
 }
 
+model advancedtp_blocklist {
+  id            Int     @id @default(autoincrement())
+  uuid_receiver String  @db.VarChar(256)
+  uuid_blocked  String  @db.VarChar(256)
+  timestamp     BigInt
+  reason        String? @db.Text
+}
+
+model advancedtp_homes {
+  id                Int    @id @default(autoincrement())
+  uuid_owner        String @db.VarChar(256)
+  home              String @db.VarChar(256)
+  x                 Float
+  y                 Float
+  z                 Float
+  yaw               Float  @db.Float
+  pitch             Float  @db.Float
+  world             String @db.VarChar(256)
+  icon              String @default("GRASS_BLOCK") @db.VarChar(256)
+  timestamp_created BigInt
+  timestamp_updated BigInt
+}
+
+model advancedtp_metadata {
+  data_id String @id @db.VarChar(256)
+  type    String @db.VarChar(256)
+  key     String @db.VarChar(256)
+  value   String @db.Text
+}
+
+model advancedtp_players {
+  id                    Int     @id @default(autoincrement())
+  uuid                  String  @db.VarChar(256)
+  name                  String  @db.VarChar(256)
+  timestamp_last_joined BigInt
+  main_home             String? @db.VarChar(256)
+  teleportation_on      Boolean @default(dbgenerated("(b'1')")) @db.Bit(1)
+  x                     Float?
+  y                     Float?
+  z                     Float?
+  yaw                   Float?  @db.Float
+  pitch                 Float?  @db.Float
+  world                 String? @db.VarChar(256)
+}
+
+model advancedtp_spawns {
+  id                Int     @id @default(autoincrement())
+  spawn             String  @db.VarChar(256)
+  uuid_creator      String? @db.VarChar(256)
+  x                 Float
+  y                 Float
+  z                 Float
+  yaw               Float   @db.Float
+  pitch             Float   @db.Float
+  world             String  @db.VarChar(256)
+  timestamp_created BigInt
+  timestamp_updated BigInt
+}
+
+model advancedtp_warps {
+  id                Int     @id @default(autoincrement())
+  warp              String  @db.VarChar(256)
+  uuid_creator      String? @db.VarChar(256)
+  x                 Float
+  y                 Float
+  z                 Float
+  yaw               Float   @db.Float
+  pitch             Float   @db.Float
+  world             String  @db.VarChar(256)
+  price             String? @db.VarChar(256)
+  timestamp_created BigInt
+  timestamp_updated BigInt
+}
+
 model backpack_players {
   player_id Int        @id @default(autoincrement()) @db.UnsignedInt
   name      String     @db.VarChar(16)
@@ -373,6 +447,28 @@ model gemseconomy_currencies {
   payable            Int?
   color              String?  @db.VarChar(255)
   exchange_rate      Decimal? @db.Decimal(10, 0)
+}
+
+model guilds_arena {
+  id   String @id @unique(map: "id") @db.VarChar(36)
+  data String @db.LongText
+}
+
+model guilds_challenge {
+  id   String @id @unique(map: "id") @db.VarChar(36)
+  data String @db.LongText
+}
+
+model guilds_cooldowns {
+  id     String   @id @unique(map: "id") @db.VarChar(36)
+  type   String   @db.VarChar(36)
+  owner  String   @db.VarChar(36)
+  expiry DateTime @default(now()) @db.Timestamp(0)
+}
+
+model guilds_guild {
+  id   String @id @unique(map: "id") @db.VarChar(36)
+  data String @db.LongText
 }
 
 model litebans_allow {
