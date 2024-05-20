@@ -1,6 +1,6 @@
 {
  "name": "reforged-api",
- "version": "1.11.10",
+ "version": "1.11.11",
  "description": "Official Javascript implementation of the Reforged Public API",
  "main": "api/index.ts",
  "scripts": {

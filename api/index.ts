@@ -287,7 +287,7 @@ app.get('/v1/guild/:name', checkOrigin, guildRateLimit, async (req: CustomReques
 
     if (guild) {
       res.status(200).json({
-        player: guild,
+        guild: guild,
         request: {
           timestamp: new Date().toISOString(),
           version: 1
