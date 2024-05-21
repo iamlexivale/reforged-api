@@ -45,6 +45,14 @@ const guildRateLimit = rateLimit({
   skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
+const leaderboardRateLimit = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: 750,
+  message: 'Too many requests from this IP, please try again later.',
+  statusCode: 429,
+  skip: (req: CustomRequest) => req.skipRateLimit || false,
+});
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message: 'Official JavaScript implementation of the Reforged Public API',
@@ -299,6 +307,60 @@ app.get('/v1/guild/:name', checkOrigin, guildRateLimit, async (req: CustomReques
   } catch (error) {
     res.status(500).json({
       error: `An error occurred while fetching /v1/guild/${name}`,
+      details: error,
+    });
+  }
+});
+
+app.get('/v1/leaderboard/players/:category', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
+  const { category } = req.params;
+
+  try {
+    const data = await prisma.guilds_guild.findMany({
+      select: { data: true },
+    });
+
+    if (data) {
+      res.status(200).json({
+        [category]: data,
+        request: {
+          timestamp: new Date().toISOString(),
+          version: 1
+        }
+      });
+    } else {
+      res.status(400).json({ error: `Category ${category} not found` });
+    }
+  } catch (error) {
+    res.status(500).json({
+      error: `An error occurred while fetching /v1/leaderboard/players/${category}`,
+      details: error,
+    });
+  }
+});
+
+app.get('/v1/leaderboard/guilds/:category', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
+  const { category } = req.params;
+
+  try {
+    const data = await prisma.guilds_guild.findMany({
+      select: { data: true },
+    });
+
+    if (data) {
+      res.status(200).json({
+        [category]: data,
+        request: {
+          timestamp: new Date().toISOString(),
+          version: 1
+        }
+      });
+    } else {
+      res.status(400).json({ error: `Category ${category} not found` });
+    }
+  } catch (error) {
+    res.status(500).json({
+      error: `An error occurred while fetching /v1/leaderboard/guilds/${category}`,
       details: error,
     });
   }
