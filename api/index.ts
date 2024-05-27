@@ -53,53 +53,22 @@ const leaderboardRateLimit = rateLimit({
   skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
-app.get("/", (req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Official JavaScript implementation of the Reforged Public API',
-    docs: 'https://docs.reforged.world',
-  });
-});
-
-app.get("/v1", (req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Official JavaScript implementation of the Reforged Public API',
-    docs: 'https://docs.reforged.world',
-    request: {
-      timestamp: new Date().toISOString(),
-      version: 1,
-    },
-  });
-});
-
 app.get('/v1/players', checkOrigin, playerRateLimit, async (req: CustomRequest, res: Response) => {
   try {
     const data = await prisma.aUTH.findMany({
       select: {
         NICKNAME: true,
         UUID: true,
-        mmoprofiles_playerdata: { select: { data: true } }
+        LOGINDATE: true
       },
       orderBy: { REGDATE: 'desc' }
     });
 
-    const modifiedData = data.map(user => {
-      const profilesData = user.mmoprofiles_playerdata?.data;
-      const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
-      const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
-
-      const extractedProfiles = profiles ? Object.fromEntries(
-        Object.entries(profiles).map(([profileId, profileData]: any) => [
-          profileId,
-          { name: profileData.Name }
-        ])
-      ) : null;
-
-      return {
-        username: user.NICKNAME,
-        uuid: user.UUID,
-        profiles: extractedProfiles
-      };
-    });
+    const modifiedData = data.map(player => ({
+      username: player.NICKNAME,
+      uuid: player.UUID,
+      lastlogin: Number(player.LOGINDATE)
+    }));
 
     res.status(200).json({
       players: modifiedData,
@@ -368,7 +337,7 @@ app.get('/v1/leaderboard/guilds/:category', checkOrigin, leaderboardRateLimit, a
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
-    error: 'Route not found'
+    message: 'no Route matched with those values'
   });
 });
 
