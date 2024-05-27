@@ -94,6 +94,7 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
       select: {
         NICKNAME: true,
         UUID: true,
+        LOGINDATE: true,
         mmoprofiles_playerdata: { select: { data: true } }
       }
     });
@@ -105,27 +106,28 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
       const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
       const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
 
-      const extractedProfiles = profiles ? Object.fromEntries(
-        Object.entries(profiles).map(([profileId, profileData]: any) => {
-          const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
-          const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
-          const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
+      const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
+        const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
+        const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
+        const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
 
-          return [
-            profileId,
-            {
-              name: profileData.Name,
-              class: mmocoreProfile?.class || null,
-              attributes: attributes,
-              professions: professions
-            }
-          ];
-        })
-      ) : null;
+        return {
+          name: profileData.Name,
+          uuid: mmocoreProfile?.uuid,
+          health: profileData.Health,
+          exp: profileData.Exp,
+          level: profileData.Level,
+          balance: profileData.Balance,
+          class: mmocoreProfile?.class,
+          attributes: attributes,
+          professions: professions
+        };
+      }) : [];
 
       return {
         username: user.NICKNAME,
         uuid: user.UUID,
+        lastlogin: Number(user.LOGINDATE),
         profiles: extractedProfiles
       };
     });
