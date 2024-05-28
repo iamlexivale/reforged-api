@@ -108,8 +108,6 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
 
       const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
         const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
-        const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
-        const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
 
         return {
           name: profileData.Name,
@@ -118,9 +116,7 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
           exp: profileData.Exp,
           level: profileData.Level,
           balance: profileData.Balance,
-          class: mmocoreProfile?.class,
-          attributes: attributes,
-          professions: professions
+          class: mmocoreProfile?.class
         };
       }) : [];
 
@@ -160,6 +156,7 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
       select: {
         NICKNAME: true,
         UUID: true,
+        LOGINDATE: true,
         mmoprofiles_playerdata: { select: { data: true } }
       }
     });
@@ -171,55 +168,42 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
       const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
       const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
 
-      const extractedProfiles = profiles ? Object.fromEntries(
-        Object.entries(profiles).map(([profileId, profileData]: any) => {
-          const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
-          const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
-          const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
+      const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
+        const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
+        const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
+        const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
 
-          return [
-            profileId,
-            {
-              name: profileData.Name,
-              class: mmocoreProfile?.class || null,
-              attributes: attributes,
-              professions: professions
-            }
-          ];
-        })
-      ) : null;
+        return {
+          name: profileData.Name,
+          uuid: mmocoreProfile?.uuid,
+          health: profileData.Health,
+          exp: profileData.Exp,
+          level: profileData.Level,
+          balance: profileData.Balance,
+          class: mmocoreProfile?.class,
+          attributes: attributes,
+          professions: professions
+        };
+      }).filter(p => p.uuid === profile) : [];
 
       return {
         username: user.NICKNAME,
         uuid: user.UUID,
-        profiles: extractedProfiles
+        lastlogin: Number(user.LOGINDATE),
+        profile: extractedProfiles.length > 0 ? extractedProfiles[0] : null
       };
     });
 
-    if (modifiedData.length > 0) {
-      const playerData = modifiedData[0];
-      const profileData = playerData.profiles?.[profile] || null;
-
-      if (profileData) {
-        const response = {
-          player: {
-            username: playerData.username,
-            uuid: playerData.uuid,
-            profile: {
-              [profile]: profileData
-            }
-          },
-          request: {
-            timestamp: new Date().toISOString(),
-            version: 1
-          }
-        };
-        res.status(200).json(response);
-      } else {
-        res.status(400).json({ error: `Profile ${profile} not found for player ${username}` });
-      }
+    if (modifiedData.length > 0 && modifiedData[0].profile) {
+      res.status(200).json({
+        player: modifiedData[0],
+        request: {
+          timestamp: new Date().toISOString(),
+          version: 1
+        }
+      });
     } else {
-      res.status(400).json({ error: `player ${username} not found` });
+      res.status(400).json({ error: `Player ${username} with profile ${profile} not found` });
     }
   } catch (error) {
     res.status(500).json({
