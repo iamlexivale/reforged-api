@@ -1,6 +1,6 @@
 {
  "name": "reforged-api",
- "version": "1.12.14",
+ "version": "1.12.15",
  "description": "Official Javascript implementation of the Reforged Public API",
  "main": "dist/index.js",
  "scripts": {
@@ -13,6 +13,7 @@
  "license": "MIT",
  "dependencies": {
   "@prisma/client": "^5.14.0",
+  "axios": "^1.7.2",
   "cors": "^2.8.5",
   "dotenv": "^16.4.5",
   "express": "^4.19.2",

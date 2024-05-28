@@ -95,6 +95,202 @@ model SharedBank {
   transactionlog String? @db.MediumText
 }
 
+model TOWNY_COOLDOWNS {
+  key    String @id @db.VarChar(200)
+  expiry BigInt
+}
+
+model TOWNY_HIBERNATEDRESIDENTS {
+  uuid       String  @id @db.VarChar(36)
+  registered BigInt?
+}
+
+model TOWNY_JAILS {
+  uuid      String  @id @db.VarChar(36)
+  townBlock String  @db.MediumText
+  spawns    String? @db.MediumText
+}
+
+model TOWNY_NATIONS {
+  name                String  @id @db.VarChar(32)
+  capital             String  @db.MediumText
+  tag                 String  @db.MediumText
+  allies              String  @db.MediumText
+  enemies             String  @db.MediumText
+  taxes               Float   @db.Float
+  taxpercent          Boolean @default(false)
+  maxPercentTaxAmount Float?  @db.Float
+  spawnCost           Float   @db.Float
+  neutral             Boolean @default(false)
+  uuid                String? @db.VarChar(36)
+  registered          BigInt?
+  nationBoard         String? @db.MediumText
+  mapColorHexCode     String? @db.MediumText
+  nationSpawn         String? @db.MediumText
+  isPublic            Boolean @default(true)
+  isOpen              Boolean @default(true)
+  metadata            String? @db.Text
+  conqueredTax        Float   @db.Float
+  sanctionedTowns     String? @db.MediumText
+}
+
+model TOWNY_PLOTGROUPS {
+  groupID    String  @id @db.VarChar(36)
+  groupName  String  @db.MediumText
+  groupPrice Float?  @db.Float
+  town       String  @db.VarChar(32)
+  metadata   String? @db.Text
+}
+
+model TOWNY_RESIDENTS {
+  name             String  @id @db.VarChar(32)
+  town             String? @db.MediumText
+  town_ranks       String? @map("town-ranks") @db.MediumText
+  nation_ranks     String? @map("nation-ranks") @db.MediumText
+  lastOnline       BigInt
+  registered       BigInt
+  joinedTownAt     BigInt
+  isNPC            Boolean @default(false)
+  jailUUID         String? @db.VarChar(36)
+  jailCell         Int?    @db.MediumInt
+  jailHours        Int?    @db.MediumInt
+  jailBail         Float?  @db.Float
+  title            String? @db.MediumText
+  surname          String? @db.MediumText
+  protectionStatus String? @db.MediumText
+  friends          String? @db.MediumText
+  metadata         String? @db.Text
+  uuid             String  @db.VarChar(36)
+  about            String? @db.MediumText
+}
+
+model TOWNY_TOWNBLOCKS {
+  world                 String  @db.VarChar(36)
+  x                     Int     @db.MediumInt
+  z                     Int     @db.MediumInt
+  name                  String? @db.MediumText
+  price                 Float?  @default(-1) @db.Float
+  taxed                 Boolean @default(true)
+  town                  String? @db.MediumText
+  resident              String? @db.MediumText
+  type                  Int     @default(0) @db.TinyInt
+  typeName              String? @db.MediumText
+  outpost               Boolean @default(false)
+  permissions           String  @db.MediumText
+  locked                Boolean @default(false)
+  changed               Boolean @default(false)
+  metadata              String? @db.Text
+  groupID               String? @db.VarChar(36)
+  claimedAt             BigInt
+  trustedResidents      String? @db.MediumText
+  customPermissionData  String? @db.MediumText
+  minTownMembershipDays Int     @default(-1) @db.SmallInt
+  maxTownMembershipDays Int     @default(-1) @db.SmallInt
+
+  @@id([world, x, z])
+}
+
+model TOWNY_TOWNS {
+  name                String  @id @db.VarChar(32)
+  mayor               String? @db.MediumText
+  nation              String? @db.MediumText
+  townBoard           String? @db.MediumText
+  tag                 String? @db.MediumText
+  founder             String? @db.MediumText
+  protectionStatus    String? @db.MediumText
+  bonus               Int?    @default(0)
+  purchased           Int?    @default(0)
+  taxpercent          Boolean @default(false)
+  maxPercentTaxAmount Float?  @db.Float
+  taxes               Float?  @default(0) @db.Float
+  hasUpkeep           Boolean @default(false)
+  plotPrice           Float?  @db.Float
+  plotTax             Float?  @db.Float
+  commercialPlotPrice Float?  @db.Float
+  commercialPlotTax   Float   @db.Float
+  embassyPlotPrice    Float   @db.Float
+  embassyPlotTax      Float   @db.Float
+  open                Boolean @default(false)
+  public              Boolean @default(false)
+  adminEnabledMobs    Boolean @default(false)
+  admindisabledpvp    Boolean @default(false)
+  adminenabledpvp     Boolean @default(false)
+  allowedToWar        Boolean @default(true)
+  homeblock           String  @db.MediumText
+  spawn               String  @db.MediumText
+  outpostSpawns       String? @db.MediumText
+  outlaws             String? @db.MediumText
+  uuid                String? @db.VarChar(36)
+  registered          BigInt?
+  spawnCost           Float   @db.Float
+  mapColorHexCode     String? @db.MediumText
+  metadata            String? @db.Text
+  conqueredDays       Int?    @db.MediumInt
+  conquered           Boolean @default(false)
+  ruined              Boolean @default(false)
+  ruinedTime          BigInt? @default(0)
+  neutral             Boolean @default(false)
+  debtBalance         Float   @db.Float
+  joinedNationAt      BigInt
+  primaryJail         String? @db.VarChar(36)
+  movedHomeBlockAt    BigInt
+  trustedResidents    String? @db.MediumText
+  trustedTowns        String  @db.MediumText
+  nationZoneOverride  Int?    @default(0)
+  nationZoneEnabled   Boolean @default(true)
+  allies              String  @db.MediumText
+  enemies             String  @db.MediumText
+  hasUnlimitedClaims  Boolean @default(false)
+  manualTownLevel     BigInt? @default(-1)
+  forSale             Boolean @default(false)
+  forSalePrice        Float   @db.Float
+  visibleOnTopLists   Boolean @default(true)
+  jailSpawns          String? @db.MediumText
+}
+
+model TOWNY_WORLDS {
+  name                                  String  @id @db.VarChar(64)
+  uuid                                  String? @db.VarChar(36)
+  claimable                             Boolean @default(false)
+  pvp                                   Boolean @default(false)
+  forcepvp                              Boolean @default(false)
+  forcetownmobs                         Boolean @default(false)
+  friendlyFire                          Boolean @default(false)
+  worldmobs                             Boolean @default(false)
+  wildernessmobs                        Boolean @default(false)
+  firespread                            Boolean @default(false)
+  forcefirespread                       Boolean @default(false)
+  explosions                            Boolean @default(false)
+  forceexplosions                       Boolean @default(false)
+  endermanprotect                       Boolean @default(false)
+  disablecreaturetrample                Boolean @default(false)
+  unclaimedZoneBuild                    Boolean @default(false)
+  unclaimedZoneDestroy                  Boolean @default(false)
+  unclaimedZoneSwitch                   Boolean @default(false)
+  unclaimedZoneItemUse                  Boolean @default(false)
+  unclaimedZoneName                     String  @db.MediumText
+  unclaimedZoneIgnoreIds                String  @db.MediumText
+  usingPlotManagementDelete             Boolean @default(false)
+  plotManagementDeleteIds               String  @db.MediumText
+  isDeletingEntitiesOnUnclaim           Boolean @default(false)
+  unclaimDeleteEntityTypes              String  @db.MediumText
+  usingPlotManagementMayorDelete        Boolean @default(false)
+  plotManagementMayorDelete             String  @db.MediumText
+  usingPlotManagementRevert             Boolean @default(false)
+  plotManagementIgnoreIds               String  @db.MediumText
+  revertOnUnclaimWhitelistMaterials     String  @db.MediumText
+  usingPlotManagementWildRegen          Boolean @default(false)
+  plotManagementWildRegenEntities       String  @db.MediumText
+  plotManagementWildRegenBlockWhitelist String  @db.MediumText
+  wildRegenBlocksToNotOverwrite         String  @db.MediumText
+  plotManagementWildRegenSpeed          String  @db.MediumText
+  usingPlotManagementWildRegenBlocks    Boolean @default(false)
+  plotManagementWildRegenBlocks         String  @db.MediumText
+  usingTowny                            Boolean @default(false)
+  warAllowed                            Boolean @default(false)
+  metadata                              String? @db.Text
+}
+
 model VentureChat {
   ID       BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
   ChatTime String? @db.Text

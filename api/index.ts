@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -29,6 +30,14 @@ const checkOrigin = (req: CustomRequest, res: Response, next: NextFunction) => {
   next();
 };
 
+const networkRateLimit = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: 750,
+  message: 'Too many requests from this IP, please try again later.',
+  statusCode: 429,
+  skip: (req: CustomRequest) => req.skipRateLimit || false,
+});
+
 const playerRateLimit = rateLimit({
   windowMs: 30 * 60 * 1000,
   max: 750,
@@ -37,7 +46,15 @@ const playerRateLimit = rateLimit({
   skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
-const guildRateLimit = rateLimit({
+const townRateLimit = rateLimit({
+  windowMs: 30 * 60 * 1000,
+  max: 750,
+  message: 'Too many requests from this IP, please try again later.',
+  statusCode: 429,
+  skip: (req: CustomRequest) => req.skipRateLimit || false,
+});
+
+const nationRateLimit = rateLimit({
   windowMs: 30 * 60 * 1000,
   max: 750,
   message: 'Too many requests from this IP, please try again later.',
@@ -51,6 +68,40 @@ const leaderboardRateLimit = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   statusCode: 429,
   skip: (req: CustomRequest) => req.skipRateLimit || false,
+});
+
+export const convertBigIntToString = (obj: any): void => {
+  for (const key in obj) {
+    if (typeof obj[key] === 'bigint') {
+      obj[key] = obj[key].toString();
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      convertBigIntToString(obj[key]);
+    }
+  }
+};
+
+app.get('/v1/network', checkOrigin, networkRateLimit, async (req: CustomRequest, res: Response) => {
+  try {
+    const playersRegisteredCount = await prisma.aUTH.count();
+    const response = await axios.get("https://api.mcstatus.io/v2/status/java/play.reforged.world");
+    const playersOnline = response.data.players.online || 0;
+
+    res.status(200).json({
+      network: {
+        players_online: playersOnline,
+        players_registered: playersRegisteredCount
+      },
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'An error occurred while fetching /v1/network',
+      details: error,
+    });
+  }
 });
 
 app.get('/v1/players', checkOrigin, playerRateLimit, async (req: CustomRequest, res: Response) => {
@@ -213,18 +264,20 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
   }
 });
 
-app.get('/v1/guilds', checkOrigin, guildRateLimit, async (req: CustomRequest, res: Response) => {
+app.get('/v1/towns', checkOrigin, townRateLimit, async (req: CustomRequest, res: Response) => {
   try {
-    const data = await prisma.guilds_guild.findMany({
-      select: { data: true },
+    const data = await prisma.tOWNY_TOWNS.findMany({
+      select: {
+        name: true,
+        mayor: true,
+        nation: true
+      }
     });
 
-    const beautifiedData = data.map((item: any) => {
-      return JSON.parse(item.data);
-    });
+    data.forEach(convertBigIntToString);
 
     res.status(200).json({
-      guilds: beautifiedData,
+      towns: data,
       request: {
         timestamp: new Date().toISOString(),
         version: 1
@@ -232,90 +285,195 @@ app.get('/v1/guilds', checkOrigin, guildRateLimit, async (req: CustomRequest, re
     });
   } catch (error) {
     res.status(500).json({
-      error: 'An error occurred while fetching /v1/guilds',
+      error: 'An error occurred while fetching /v1/towns',
       details: error,
     });
   }
 });
 
-app.get('/v1/guild/:name', checkOrigin, guildRateLimit, async (req: CustomRequest, res: Response) => {
-  const { name } = req.params;
+app.get('/v1/town/:town', checkOrigin, townRateLimit, async (req: CustomRequest, res: Response) => {
+  const { town } = req.params;
 
   try {
-    const allGuilds = await prisma.guilds_guild.findMany({
-      select: { data: true },
+    const data = await prisma.tOWNY_TOWNS.findMany({
+      where: { name: town }
     });
 
-    const guild: any = allGuilds.map((item: any) => JSON.parse(item.data)).find((g: any) => g.name === name);
+    data.forEach(convertBigIntToString);
 
-    if (guild) {
+    if (data.length > 0) {
       res.status(200).json({
-        guild: guild,
+        town: data[0],
         request: {
           timestamp: new Date().toISOString(),
           version: 1
         }
       });
     } else {
-      res.status(400).json({ error: `Guild ${name} not found` });
+      res.status(400).json({ error: `Town ${town} not found` });
     }
   } catch (error) {
     res.status(500).json({
-      error: `An error occurred while fetching /v1/guild/${name}`,
+      error: `An error occurred while fetching /v1/town/${town}`,
       details: error,
     });
   }
 });
 
-app.get('/v1/leaderboard/players/:category', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
-  const { category } = req.params;
-
+app.get('/v1/nations', checkOrigin, nationRateLimit, async (req: CustomRequest, res: Response) => {
   try {
-    const data = await prisma.guilds_guild.findMany({
-      select: { data: true },
+    const data = await prisma.tOWNY_NATIONS.findMany({
+      select: {
+        name: true,
+        capital: true,
+        registered: true
+      }
     });
 
-    if (data) {
+    data.forEach(convertBigIntToString);
+
+    res.status(200).json({
+      nations: data,
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'An error occurred while fetching /v1/nations',
+      details: error,
+    });
+  }
+});
+
+app.get('/v1/nation/:nation', checkOrigin, nationRateLimit, async (req: CustomRequest, res: Response) => {
+  const { nation } = req.params;
+
+  try {
+    const data = await prisma.tOWNY_NATIONS.findMany({
+      where: { name: nation }
+    });
+
+    data.forEach(convertBigIntToString);
+
+    if (data.length > 0) {
       res.status(200).json({
-        [category]: data,
+        nation: data[0],
         request: {
           timestamp: new Date().toISOString(),
           version: 1
         }
       });
     } else {
-      res.status(400).json({ error: `Category ${category} not found` });
+      res.status(400).json({ error: `Nation ${nation} not found` });
     }
   } catch (error) {
     res.status(500).json({
-      error: `An error occurred while fetching /v1/leaderboard/players/${category}`,
+      error: `An error occurred while fetching /v1/nation/${nation}`,
       details: error,
     });
   }
 });
 
-app.get('/v1/leaderboard/guilds/:category', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
-  const { category } = req.params;
-
+app.get('/v1/leaderboard/players', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
   try {
-    const data = await prisma.guilds_guild.findMany({
-      select: { data: true },
+    const data = await prisma.gemseconomy_accounts.findMany({
+      select: { nickname: true, balance_data: true },
     });
 
-    if (data) {
-      res.status(200).json({
-        [category]: data,
-        request: {
-          timestamp: new Date().toISOString(),
-          version: 1
-        }
-      });
-    } else {
-      res.status(400).json({ error: `Category ${category} not found` });
-    }
+    const filteredData: any = data.filter(item => {
+      const nickname = item?.nickname || "";
+      return !nickname.startsWith("town-") && !nickname.startsWith("nation-");
+    });
+
+    const transformedData = filteredData.map((item: any) => {
+      return {
+        player: item?.nickname,
+        coins: item.balance_data ? JSON.parse(item.balance_data)['74a5fdc3-fbd1-450d-b0bd-dee39ca28503'] : 0.0
+      };
+    });
+
+    transformedData.sort((a: any, b: any) => b.coins - a.coins);
+
+    const top10Coins = transformedData.slice(0, 10);
+
+    res.status(200).json({
+      players: top10Coins,
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
   } catch (error) {
     res.status(500).json({
-      error: `An error occurred while fetching /v1/leaderboard/guilds/${category}`,
+      error: 'An error occurred while fetching /v1/leaderboard/players',
+      details: error,
+    });
+  }
+});
+
+app.get('/v1/leaderboard/towns', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
+  try {
+    const data = await prisma.gemseconomy_accounts.findMany({
+      where: { nickname: { startsWith: 'town-' } },
+      select: { nickname: true, balance_data: true },
+    });
+
+    const transformedData = data.map(item => {
+      return {
+        town: item?.nickname?.replace('town-', ''),
+        coins: item.balance_data ? JSON.parse(item.balance_data)['74a5fdc3-fbd1-450d-b0bd-dee39ca28503'] : 0.0
+      };
+    });
+
+    transformedData.sort((a, b) => b.coins - a.coins);
+
+    const top10Towns = transformedData.slice(0, 10);
+
+    res.status(200).json({
+      towns: top10Towns,
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'An error occurred while fetching /v1/leaderboard/towns',
+      details: error,
+    });
+  }
+});
+
+app.get('/v1/leaderboard/nations', checkOrigin, leaderboardRateLimit, async (req: CustomRequest, res: Response) => {
+  try {
+    const data = await prisma.gemseconomy_accounts.findMany({
+      where: { nickname: { startsWith: 'nation-' } },
+      select: { nickname: true, balance_data: true },
+    });
+
+    const transformedData = data.map(item => {
+      return {
+        nation: item?.nickname?.replace('nation-', ''),
+        coins: item.balance_data ? JSON.parse(item.balance_data)['74a5fdc3-fbd1-450d-b0bd-dee39ca28503'] : 0.0
+      };
+    });
+
+    transformedData.sort((a, b) => b.coins - a.coins);
+
+    const top10Nations = transformedData.slice(0, 10);
+
+    res.status(200).json({
+      nations: top10Nations,
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'An error occurred while fetching /v1/leaderboard/nations',
       details: error,
     });
   }
