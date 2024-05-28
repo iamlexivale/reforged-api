@@ -70,7 +70,7 @@ const leaderboardRateLimit = rateLimit({
   skip: (req: CustomRequest) => req.skipRateLimit || false,
 });
 
-export const convertBigIntToString = (obj: any): void => {
+const convertBigIntToString = (obj: any): void => {
   for (const key in obj) {
     if (typeof obj[key] === 'bigint') {
       obj[key] = obj[key].toString();
@@ -479,7 +479,7 @@ app.get('/v1/leaderboard/nations', checkOrigin, leaderboardRateLimit, async (req
   }
 });
 
-app.use((req: Request, res: Response) => {
+app.use((req: CustomRequest, res: Response) => {
   res.status(404).json({
     message: 'no Route matched with those values'
   });
