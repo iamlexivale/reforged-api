@@ -165,7 +165,7 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
           uuid: mmocoreProfile?.uuid,
           health: profileData.Health,
           exp: profileData.Exp,
-          level: profileData.Level,
+          level: mmocoreProfile?.level,
           balance: profileData.Balance,
           class: mmocoreProfile?.class
         };
@@ -229,7 +229,7 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
           uuid: mmocoreProfile?.uuid,
           health: profileData.Health,
           exp: profileData.Exp,
-          level: profileData.Level,
+          level: mmocoreProfile?.level,
           balance: profileData.Balance,
           class: mmocoreProfile?.class,
           attributes: attributes,
