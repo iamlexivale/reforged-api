@@ -1,7 +1,7 @@
 <h1 align="center">
     <br/>
     <a href="https://www.reforged.world/" target="_blank">
-        <img src="https://cdn.discordapp.com/attachments/1240631069879963649/1240631093846081689/reforged.png?ex=6654723e&is=665320be&hm=3c6a1d078868163f7309a7b4cc06b34c7007ba4b140acb11068b7076c4d209c2&" width="200" alt="Reforged" />
+        <img src="https://sin1.contabostorage.com/8e522510ce50465f85df97fa757b2d60:reforged/reforged-logo.png" width="200" alt="Reforged" />
     </a>
     <br/>
     <br/>
