@@ -167,7 +167,7 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
     const modifiedData = {
       username: player.username,
       uuid: player.uuid,
-      primaryGroup: player.primary_group,
+      primary_group: player.primary_group,
       profiles: extractedProfiles
     };
 
@@ -238,7 +238,7 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
     const modifiedData = {
       username: player.username,
       uuid: player.uuid,
-      primaryGroup: player.primary_group,
+      primary_group: player.primary_group,
       profile: extractedProfiles.length > 0 ? extractedProfiles[0] : null
     };
 
@@ -323,7 +323,7 @@ app.get('/v1/nations', checkOrigin, nationRateLimit, async (req: CustomRequest, 
       select: {
         name: true,
         capital: true,
-        registered: true
+        nationBoard: true
       }
     });
 
