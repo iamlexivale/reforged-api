@@ -8,18 +8,17 @@ datasource db {
 }
 
 model AUTH {
-  NICKNAME               String                  @db.VarChar(255)
-  LOWERCASENICKNAME      String                  @id @db.VarChar(255)
-  HASH                   String                  @db.VarChar(255)
-  IP                     String?                 @db.VarChar(255)
-  TOTPTOKEN              String?                 @db.VarChar(255)
-  REGDATE                BigInt?
-  UUID                   String?                 @unique(map: "uuid") @db.VarChar(255)
-  PREMIUMUUID            String?                 @db.VarChar(255)
-  LOGINIP                String?                 @db.VarChar(255)
-  LOGINDATE              BigInt?
-  ISSUEDTIME             BigInt?
-  mmoprofiles_playerdata mmoprofiles_playerdata?
+  NICKNAME          String  @db.VarChar(255)
+  LOWERCASENICKNAME String  @id @db.VarChar(255)
+  HASH              String  @db.VarChar(255)
+  IP                String? @db.VarChar(255)
+  TOTPTOKEN         String? @db.VarChar(255)
+  REGDATE           BigInt?
+  UUID              String? @unique(map: "uuid") @db.VarChar(255)
+  PREMIUMUUID       String? @db.VarChar(255)
+  LOGINIP           String? @db.VarChar(255)
+  LOGINDATE         BigInt?
+  ISSUEDTIME        BigInt?
 
   @@index([IP])
   @@index([PREMIUMUUID])
@@ -302,6 +301,13 @@ model VentureChat {
   Type     String? @db.Text
 }
 
+model ac_aquaticcrates_keys {
+  id         Int    @id @default(autoincrement())
+  UniqueID   String @db.VarChar(64)
+  Identifier String @db.VarChar(64)
+  Amount     Int
+}
+
 model advancedtp_blocklist {
   id            Int     @id @default(autoincrement())
   uuid_receiver String  @db.VarChar(256)
@@ -389,222 +395,6 @@ model backpacks {
   version          Int?             @default(0)
   lastupdate       DateTime         @default(now()) @db.Timestamp(0)
   backpack_players backpack_players @relation(fields: [owner], references: [player_id], onDelete: Cascade, map: "fk_backpacks_backpack_players_owner")
-}
-
-model cp_art_map {
-  rowid Int     @id @default(autoincrement())
-  id    Int?
-  art   String? @db.VarChar(255)
-
-  @@index([id], map: "id")
-}
-
-model cp_block {
-  rowid       BigInt @id @default(autoincrement())
-  time        Int?
-  user        Int?
-  wid         Int?
-  x           Int?
-  y           Int?
-  z           Int?
-  type        Int?
-  data        Int?
-  meta        Bytes? @db.MediumBlob
-  blockdata   Bytes? @db.Blob
-  action      Int?   @db.TinyInt
-  rolled_back Int?   @db.TinyInt
-
-  @@index([type, time], map: "type")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_blockdata_map {
-  rowid Int     @id @default(autoincrement())
-  id    Int?
-  data  String? @db.VarChar(255)
-
-  @@index([id], map: "id")
-}
-
-model cp_chat {
-  rowid   Int     @id @default(autoincrement())
-  time    Int?
-  user    Int?
-  wid     Int?
-  x       Int?
-  y       Int?
-  z       Int?
-  message String? @db.VarChar(16000)
-
-  @@index([time], map: "time")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_command {
-  rowid   Int     @id @default(autoincrement())
-  time    Int?
-  user    Int?
-  wid     Int?
-  x       Int?
-  y       Int?
-  z       Int?
-  message String? @db.VarChar(16000)
-
-  @@index([time], map: "time")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_container {
-  rowid       Int    @id @default(autoincrement())
-  time        Int?
-  user        Int?
-  wid         Int?
-  x           Int?
-  y           Int?
-  z           Int?
-  type        Int?
-  data        Int?
-  amount      Int?
-  metadata    Bytes? @db.Blob
-  action      Int?   @db.TinyInt
-  rolled_back Int?   @db.TinyInt
-
-  @@index([type, time], map: "type")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_database_lock {
-  rowid  Int  @id @default(autoincrement())
-  status Int? @db.TinyInt
-  time   Int?
-}
-
-model cp_entity {
-  rowid Int    @id @default(autoincrement())
-  time  Int?
-  data  Bytes? @db.Blob
-}
-
-model cp_entity_map {
-  rowid  Int     @id @default(autoincrement())
-  id     Int?
-  entity String? @db.VarChar(255)
-
-  @@index([id], map: "id")
-}
-
-model cp_item {
-  rowid       Int    @id @default(autoincrement())
-  time        Int?
-  user        Int?
-  wid         Int?
-  x           Int?
-  y           Int?
-  z           Int?
-  type        Int?
-  data        Bytes? @db.Blob
-  amount      Int?
-  action      Int?   @db.TinyInt
-  rolled_back Int?   @db.TinyInt
-
-  @@index([type, time], map: "type")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_material_map {
-  rowid    Int     @id @default(autoincrement())
-  id       Int?
-  material String? @db.VarChar(255)
-
-  @@index([id], map: "id")
-}
-
-model cp_session {
-  rowid  Int  @id @default(autoincrement())
-  time   Int?
-  user   Int?
-  wid    Int?
-  x      Int?
-  y      Int?
-  z      Int?
-  action Int? @db.TinyInt
-
-  @@index([action, time], map: "action")
-  @@index([time], map: "time")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_sign {
-  rowid           Int     @id @default(autoincrement())
-  time            Int?
-  user            Int?
-  wid             Int?
-  x               Int?
-  y               Int?
-  z               Int?
-  action          Int?    @db.TinyInt
-  color           Int?
-  color_secondary Int?
-  data            Int?    @db.TinyInt
-  waxed           Int?    @db.TinyInt
-  face            Int?    @db.TinyInt
-  line_1          String? @db.VarChar(100)
-  line_2          String? @db.VarChar(100)
-  line_3          String? @db.VarChar(100)
-  line_4          String? @db.VarChar(100)
-  line_5          String? @db.VarChar(100)
-  line_6          String? @db.VarChar(100)
-  line_7          String? @db.VarChar(100)
-  line_8          String? @db.VarChar(100)
-
-  @@index([time], map: "time")
-  @@index([user, time], map: "user")
-  @@index([wid, x, z, time], map: "wid")
-}
-
-model cp_skull {
-  rowid Int     @id @default(autoincrement())
-  time  Int?
-  owner String? @db.VarChar(64)
-}
-
-model cp_user {
-  rowid Int     @id @default(autoincrement())
-  time  Int?
-  user  String? @db.VarChar(100)
-  uuid  String? @db.VarChar(64)
-
-  @@index([user], map: "user")
-  @@index([uuid], map: "uuid")
-}
-
-model cp_username_log {
-  rowid Int     @id @default(autoincrement())
-  time  Int?
-  uuid  String? @db.VarChar(64)
-  user  String? @db.VarChar(100)
-
-  @@index([uuid, user], map: "uuid")
-}
-
-model cp_version {
-  rowid   Int     @id @default(autoincrement())
-  time    Int?
-  version String? @db.VarChar(16)
-}
-
-model cp_world {
-  rowid Int     @id @default(autoincrement())
-  id    Int?
-  world String? @db.VarChar(255)
-
-  @@index([id], map: "id")
 }
 
 model discordsrv_accounts {
@@ -927,7 +717,6 @@ model mmoprofiles_playerdata {
   uuid     String  @id @db.VarChar(255)
   data     String? @db.LongText
   is_saved Int?    @db.TinyInt
-  AUTH     AUTH    @relation(fields: [uuid], references: [UUID], onUpdate: Restrict, map: "nicknames")
 }
 
 model personal_backpacks {
@@ -942,6 +731,34 @@ model premiumvanish_playerdata {
   Name        String?  @db.VarChar(16)
   Vanished    Boolean?
   ItemPickUps Boolean?
+}
+
+model quests_database_information {
+  key   String @id @db.VarChar(255)
+  value String @db.VarChar(255)
+}
+
+model quests_quest_progress {
+  uuid             String  @db.VarChar(36)
+  quest_id         String  @db.VarChar(50)
+  started          Boolean
+  started_date     BigInt
+  completed        Boolean
+  completed_before Boolean
+  completion_date  BigInt
+
+  @@id([uuid, quest_id])
+}
+
+model quests_task_progress {
+  uuid      String  @db.VarChar(36)
+  quest_id  String  @db.VarChar(50)
+  task_id   String  @db.VarChar(50)
+  completed Boolean
+  progress  String? @db.VarChar(64)
+  data_type String? @db.VarChar(10)
+
+  @@id([uuid, quest_id, task_id])
 }
 
 model sr_cache {

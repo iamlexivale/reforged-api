@@ -84,12 +84,13 @@ app.get('/v1/network', checkOrigin, networkRateLimit, async (req: CustomRequest,
   try {
     const playersRegisteredCount = await prisma.aUTH.count();
     const response = await axios.get("https://api.mcstatus.io/v2/status/java/play.reforged.world");
-    const playersOnline = response.data.players.online || 0;
+    const playersOnline = response.data.players.online;
+    const isOnline = response.data.online;
 
     res.status(200).json({
       network: {
-        players_online: playersOnline,
-        players_registered: playersRegisteredCount
+        players_online: isOnline ? playersOnline : 0,
+        players_registered: playersRegisteredCount || 0
       },
       request: {
         timestamp: new Date().toISOString(),
@@ -106,23 +107,10 @@ app.get('/v1/network', checkOrigin, networkRateLimit, async (req: CustomRequest,
 
 app.get('/v1/players', checkOrigin, playerRateLimit, async (req: CustomRequest, res: Response) => {
   try {
-    const data = await prisma.aUTH.findMany({
-      select: {
-        NICKNAME: true,
-        UUID: true,
-        LOGINDATE: true
-      },
-      orderBy: { REGDATE: 'desc' }
-    });
-
-    const modifiedData = data.map(player => ({
-      username: player.NICKNAME,
-      uuid: player.UUID,
-      lastlogin: Number(player.LOGINDATE)
-    }));
+    const luckPermsPlayers = await prisma.luckperms_players.findMany();
 
     res.status(200).json({
-      players: modifiedData,
+      players: luckPermsPlayers,
       request: {
         timestamp: new Date().toISOString(),
         version: 1
@@ -140,56 +128,56 @@ app.get('/v1/player/:username', checkOrigin, playerRateLimit, async (req: Custom
   const { username } = req.params;
 
   try {
-    const data = await prisma.aUTH.findMany({
-      where: { NICKNAME: username },
+    const playersData = await prisma.luckperms_players.findMany({
+      where: { username },
       select: {
-        NICKNAME: true,
-        UUID: true,
-        LOGINDATE: true,
-        mmoprofiles_playerdata: { select: { data: true } }
+        username: true,
+        uuid: true,
+        primary_group: true
       }
+    });
+
+    const player = playersData[0];
+    
+    const mmoprofileData = await prisma.mmoprofiles_playerdata.findUnique({
+      where: { uuid: player.uuid },
+      select: { data: true }
     });
 
     const mmocoreData = await prisma.mmocore_playerdata.findMany();
 
-    const modifiedData = data.map(user => {
-      const profilesData = user.mmoprofiles_playerdata?.data;
-      const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
-      const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
+    const profilesData = mmoprofileData?.data;
+    const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
+    const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
 
-      const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
-        const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
-
-        return {
-          name: profileData.Name,
-          uuid: mmocoreProfile?.uuid,
-          health: profileData.Health,
-          exp: profileData.Exp,
-          level: mmocoreProfile?.level,
-          balance: profileData.Balance,
-          class: mmocoreProfile?.class
-        };
-      }) : [];
+    const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
+      const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
 
       return {
-        username: user.NICKNAME,
-        uuid: user.UUID,
-        lastlogin: Number(user.LOGINDATE),
-        profiles: extractedProfiles
+        name: profileData.Name,
+        uuid: mmocoreProfile?.uuid,
+        health: profileData.Health,
+        exp: profileData.Exp,
+        level: mmocoreProfile?.level,
+        balance: profileData.Balance,
+        class: mmocoreProfile?.class
       };
-    });
+    }) : [];
 
-    if (modifiedData.length > 0) {
-      res.status(200).json({
-        player: modifiedData[0],
-        request: {
-          timestamp: new Date().toISOString(),
-          version: 1
-        }
-      });
-    } else {
-      res.status(400).json({ error: `Player ${username} not found` });
-    }
+    const modifiedData = {
+      username: player.username,
+      uuid: player.uuid,
+      primaryGroup: player.primary_group,
+      profiles: extractedProfiles
+    };
+
+    res.status(200).json({
+      player: modifiedData,
+      request: {
+        timestamp: new Date().toISOString(),
+        version: 1
+      }
+    });
   } catch (error) {
     res.status(500).json({
       error: `An error occurred while fetching /v1/player/${username}`,
@@ -202,52 +190,61 @@ app.get('/v1/player/:username/:profile', checkOrigin, playerRateLimit, async (re
   const { username, profile } = req.params;
 
   try {
-    const data = await prisma.aUTH.findMany({
-      where: { NICKNAME: username },
+    const playersData = await prisma.luckperms_players.findMany({
+      where: { username },
       select: {
-        NICKNAME: true,
-        UUID: true,
-        LOGINDATE: true,
-        mmoprofiles_playerdata: { select: { data: true } }
+        username: true,
+        uuid: true,
+        primary_group: true
       }
+    });
+
+    if (playersData.length === 0) {
+      res.status(400).json({ error: `Player ${username} not found` });
+      return;
+    }
+
+    const player = playersData[0];
+
+    const mmoprofileData = await prisma.mmoprofiles_playerdata.findUnique({
+      where: { uuid: player.uuid },
+      select: { data: true }
     });
 
     const mmocoreData = await prisma.mmocore_playerdata.findMany();
 
-    const modifiedData = data.map(user => {
-      const profilesData = user.mmoprofiles_playerdata?.data;
-      const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
-      const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
+    const profilesData = mmoprofileData?.data;
+    const parsedProfiles = profilesData ? JSON.parse(profilesData) : null;
+    const profiles = parsedProfiles ? parsedProfiles.Profiles : null;
 
-      const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
-        const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
-        const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
-        const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
-
-        return {
-          name: profileData.Name,
-          uuid: mmocoreProfile?.uuid,
-          health: profileData.Health,
-          exp: profileData.Exp,
-          level: mmocoreProfile?.level,
-          balance: profileData.Balance,
-          class: mmocoreProfile?.class,
-          attributes: attributes,
-          professions: professions
-        };
-      }).filter(p => p.uuid === profile) : [];
+    const extractedProfiles = profiles ? Object.entries(profiles).map(([profileId, profileData]: any) => {
+      const mmocoreProfile = mmocoreData.find(p => p.uuid === profileId);
+      const attributes = mmocoreProfile?.attributes ? JSON.parse(mmocoreProfile.attributes) : null;
+      const professions = mmocoreProfile?.professions ? JSON.parse(mmocoreProfile.professions) : null;
 
       return {
-        username: user.NICKNAME,
-        uuid: user.UUID,
-        lastlogin: Number(user.LOGINDATE),
-        profile: extractedProfiles.length > 0 ? extractedProfiles[0] : null
+        name: profileData.Name,
+        uuid: mmocoreProfile?.uuid,
+        health: profileData.Health,
+        exp: profileData.Exp,
+        level: mmocoreProfile?.level,
+        balance: profileData.Balance,
+        class: mmocoreProfile?.class,
+        attributes: attributes,
+        professions: professions
       };
-    });
+    }).filter(p => p.uuid === profile) : [];
 
-    if (modifiedData.length > 0 && modifiedData[0].profile) {
+    const modifiedData = {
+      username: player.username,
+      uuid: player.uuid,
+      primaryGroup: player.primary_group,
+      profile: extractedProfiles.length > 0 ? extractedProfiles[0] : null
+    };
+
+    if (modifiedData.profile) {
       res.status(200).json({
-        player: modifiedData[0],
+        player: modifiedData,
         request: {
           timestamp: new Date().toISOString(),
           version: 1
