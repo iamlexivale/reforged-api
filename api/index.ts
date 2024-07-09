@@ -51,23 +51,23 @@ app.post('/auth/login', async (req: Request, res: Response) => {
 });
 
 app.post('/auth/verify', authenticateToken, (req: Request, res: Response) => {
-  res.json({ valid: true, message: 'Token is valid' });
-});
-
-app.get('/admin/dashboard', authenticateToken, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   res.status(200).json({
     signature: user.username,
+    valid: true,
+    message: 'Token is valid'
+  });
+});
+
+app.get('/admin/dashboard', authenticateToken, (req: Request, res: Response) => {
+  res.status(200).json({
     message: "dashboard"
   });
 });
 
 app.get('/admin/players', authenticateToken, (req: Request, res: Response) => {
-  const user = (req as any).user;
-
   res.status(200).json({
-    signature: user.username,
     message: "players"
   });
 });
