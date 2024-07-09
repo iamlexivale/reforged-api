@@ -4,6 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import axios from 'axios';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -14,6 +16,52 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ==============================
+// Private API
+// ==============================
+
+app.post('/login', async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+
+  const user = await prisma.admin.findUnique({
+    where: { username: username }
+  });
+
+  if (user && await bcrypt.compare(password, user.password)) {
+    const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET || "", { expiresIn: '7d' });
+    res.json({ accessToken });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
+
+const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers.token as string;
+
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || "", (err, decoded) => {
+    if (err) {
+      return res.sendStatus(403);
+    }
+    (req as any).user = decoded;
+    next();
+  });
+};
+
+app.get('/v1/dashboard', authenticateToken, (req: Request, res: Response) => {
+  const user = (req as any).user;
+
+  res.status(200).json({
+    signature: user.username,
+    message: "Welcome to the dashboard"
+  });
+});
+
+// ==============================
+// Public API
+// ==============================
 
 interface CustomRequest extends Request {
   skipRateLimit?: boolean;

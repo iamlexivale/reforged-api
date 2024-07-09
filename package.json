@@ -1,6 +1,6 @@
 {
  "name": "reforged-api",
- "version": "1.13.20",
+ "version": "1.13.21",
  "description": "Official Javascript implementation of the Reforged Public API",
  "main": "dist/index.js",
  "scripts": {
@@ -14,14 +14,18 @@
  "dependencies": {
   "@prisma/client": "^5.15.1",
   "axios": "^1.7.2",
+  "bcrypt": "^5.1.1",
   "cors": "^2.8.5",
   "dotenv": "^16.4.5",
   "express": "^4.19.2",
-  "express-rate-limit": "^7.2.0"
+  "express-rate-limit": "^7.2.0",
+  "jsonwebtoken": "^9.0.2"
  },
  "devDependencies": {
+  "@types/bcrypt": "^5.0.2",
   "@types/cors": "^2.8.17",
   "@types/express": "^4.17.21",
+  "@types/jsonwebtoken": "^9.0.6",
   "@types/node": "^20.12.12",
   "nodemon": "^3.1.0",
   "prisma": "^5.15.1",

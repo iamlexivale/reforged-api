@@ -308,6 +308,13 @@ model ac_aquaticcrates_keys {
   Amount     Int
 }
 
+model admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique(map: "admin_pk") @db.VarChar(64)
+  password String @db.VarChar(512)
+  role     Int
+}
+
 model advancedtp_blocklist {
   id            Int     @id @default(autoincrement())
   uuid_receiver String  @db.VarChar(256)
@@ -724,6 +731,18 @@ model personal_backpacks {
   player_name String?   @db.VarChar(128)
   content     String?   @db.LongText
   update_date DateTime? @db.DateTime(0)
+}
+
+model player_cosmetics {
+  id        Int     @id @default(autoincrement())
+  UUID      String? @db.VarChar(255)
+  Player    String? @db.VarChar(255)
+  Hat       String? @db.VarChar(255)
+  Bag       String? @db.VarChar(255)
+  WStick    String? @db.VarChar(255)
+  Balloon   String? @db.VarChar(255)
+  Spray     String? @db.VarChar(255)
+  Available String? @db.VarChar(10000)
 }
 
 model premiumvanish_playerdata {
