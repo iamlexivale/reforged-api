@@ -50,7 +50,6 @@ app.post('/v1/login', async (req: Request, res: Response) => {
   }
 });
 
-// Token verification endpoint
 app.post('/v1/verify', authenticateToken, (req: Request, res: Response) => {
   res.json({ valid: true, message: 'Token is valid' });
 });
