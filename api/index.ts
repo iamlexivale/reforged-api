@@ -35,7 +35,7 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 // Private API
 // ==============================
 
-app.post('/v1/login', async (req: Request, res: Response) => {
+app.post('/auth/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   const user = await prisma.admin.findUnique({
@@ -50,11 +50,11 @@ app.post('/v1/login', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/v1/verify', authenticateToken, (req: Request, res: Response) => {
+app.post('/auth/verify', authenticateToken, (req: Request, res: Response) => {
   res.json({ valid: true, message: 'Token is valid' });
 });
 
-app.get('/v1/dashboard', authenticateToken, (req: Request, res: Response) => {
+app.get('/admin/dashboard', authenticateToken, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   res.status(200).json({
@@ -63,7 +63,7 @@ app.get('/v1/dashboard', authenticateToken, (req: Request, res: Response) => {
   });
 });
 
-app.get('/v1/players', authenticateToken, (req: Request, res: Response) => {
+app.get('/admin/players', authenticateToken, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   res.status(200).json({
