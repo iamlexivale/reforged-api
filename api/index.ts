@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 // Private API
 // ==============================
 
-app.post('/login', async (req: Request, res: Response) => {
+app.post('/v1/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   const user = await prisma.admin.findUnique({
