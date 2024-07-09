@@ -17,6 +17,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers.token as string;
+
+  if (!token) return res.status(401).json({ valid: false, message: 'Token is required' });
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || "", (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ valid: false, message: 'Invalid token' });
+    }
+    (req as any).user = decoded;
+    next();
+  });
+};
+
 // ==============================
 // Private API
 // ==============================
@@ -36,26 +50,26 @@ app.post('/v1/login', async (req: Request, res: Response) => {
   }
 });
 
-const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.token as string;
-
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || "", (err, decoded) => {
-    if (err) {
-      return res.sendStatus(403);
-    }
-    (req as any).user = decoded;
-    next();
-  });
-};
+// Token verification endpoint
+app.post('/v1/verify', authenticateToken, (req: Request, res: Response) => {
+  res.json({ valid: true, message: 'Token is valid' });
+});
 
 app.get('/v1/dashboard', authenticateToken, (req: Request, res: Response) => {
   const user = (req as any).user;
 
   res.status(200).json({
     signature: user.username,
-    message: "Welcome to the dashboard"
+    message: "dashboard"
+  });
+});
+
+app.get('/v1/players', authenticateToken, (req: Request, res: Response) => {
+  const user = (req as any).user;
+
+  res.status(200).json({
+    signature: user.username,
+    message: "players"
   });
 });
 
