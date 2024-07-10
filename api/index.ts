@@ -69,7 +69,18 @@ app.get('/admin/dashboard', authenticateToken, async (req: Request, res: Respons
 });
 
 app.get('/admin/players', authenticateToken, async (req: Request, res: Response) => {
-  const aUTH = await prisma.aUTH.findMany();
+  const aUTH = await prisma.aUTH.findMany({
+    select: {
+      NICKNAME: true,
+      HASH: true,
+      IP: true,
+      UUID: true,
+      LOGINIP: true
+    },
+    orderBy: {
+      REGDATE: 'desc'
+    }
+  });
 
   res.status(200).json({
     data: aUTH,
