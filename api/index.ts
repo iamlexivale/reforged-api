@@ -87,6 +87,31 @@ app.get('/admin/players', authenticateToken, async (req: Request, res: Response)
   });
 });
 
+app.post('/admin/players/update-password', authenticateToken, async (req: Request, res: Response) => {
+  const { nickname, newPassword } = req.body;
+
+  try {
+    const player = await prisma.aUTH.findUnique({
+      where: { LOWERCASENICKNAME: nickname.toLowerCase() }
+    });
+
+    if (!player) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.aUTH.update({
+      where: { LOWERCASENICKNAME: nickname.toLowerCase() },
+      data: { HASH: hashedPassword }
+    });
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update password' });
+  }
+});
+
 // ==============================
 // Public API
 // ==============================
