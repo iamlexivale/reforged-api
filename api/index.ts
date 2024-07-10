@@ -87,7 +87,7 @@ app.get('/admin/players', authenticateToken, async (req: Request, res: Response)
   });
 });
 
-app.post('/admin/players/update-password', authenticateToken, async (req: Request, res: Response) => {
+app.put('/admin/players/update-password', authenticateToken, async (req: Request, res: Response) => {
   const { nickname, newPassword } = req.body;
 
   try {
