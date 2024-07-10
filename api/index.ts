@@ -61,18 +61,18 @@ app.post('/auth/verify', authenticateToken, (req: Request, res: Response) => {
 });
 
 app.get('/admin/dashboard', authenticateToken, async (req: Request, res: Response) => {
-  const aUTH = await prisma.aUTH.findMany();
-
-  res.status(200).json({
-    data: aUTH,
-  });
-});
-
-app.get('/admin/players', authenticateToken, async (req: Request, res: Response) => {
   const luckperms_players = await prisma.luckperms_players.findMany();
 
   res.status(200).json({
     data: luckperms_players,
+  });
+});
+
+app.get('/admin/players', authenticateToken, async (req: Request, res: Response) => {
+  const aUTH = await prisma.aUTH.findMany();
+
+  res.status(200).json({
+    data: aUTH,
   });
 });
 
